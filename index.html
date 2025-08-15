@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Algoritmos de Caminos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(4px);
+        }
+        
+        .instructions {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .instructions p {
+            margin-bottom: 8px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #1a5276);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #1a5276, #3498db);
+        }
+        
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .grid-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            height: 400px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(40, 1fr);
+            grid-template-rows: repeat(40, 1fr);
+            width: 100%;
+            height: 100%;
+            gap: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .cell {
+            background: #2c3e50;
+            transition: all 0.1s ease;
+        }
+        
+        .cell.start {
+            background: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71;
+        }
+        
+        .cell.end {
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+        
+        .cell.wall {
+            background: #34495e;
+        }
+        
+        .cell.visited {
+            background: #3498db;
+        }
+        
+        .cell.path {
+            background: #9b59b6;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .cell.visited.dijkstra {
+            background: #1abc9c;
+        }
+        
+        .cell.visited.astar {
+            background: #f1c40f;
+        }
+        
+        .cell.path.dijkstra {
+            background: #8e44ad;
+        }
+        
+        .cell.path.astar {
+            background: #e67e22;
+        }
+        
+        .results {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        .algo-result {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .algo-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .stats {
+            font-size: 1.1rem;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .speed-control input {
+            flex: 1;
+        }
+        
+        .winner {
+            animation: winnerPulse 1.5s infinite;
+        }
+        
+        @keyframes winnerPulse {
+            0% { box-shadow: 0 0 5px #fff; }
+            50% { box-shadow: 0 0 20px #ffdd00; }
+            100% { box-shadow: 0 0 5px #fff; }
+        }
+        
+        .comparison {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            min-height: 40px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .explanation {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Visualizador de Algoritmos de Caminos</h1>
+        <div class="subtitle">Dijkstra vs A* - Comparación en tiempo real</div>
+    </header>
+    
+    <div class="container">
+        <div class="control-panel">
+            <div class="instructions">
+                <p><strong>Instrucciones:</strong></p>
+                <p>1. Selecciona el punto de inicio (clic izquierdo) y destino (clic derecho)</p>
+                <p>2. Dibuja obstáculos manteniendo presionado el ratón</p>
+                <p>3. Haz clic en "Iniciar Visualización" para ver los algoritmos en acción</p>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2ecc71;"></div>
+                    <span>Inicio</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e74c3c;"></div>
+                    <span>Destino</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #34495e;"></div>
+                    <span>Obstáculo</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #1abc9c;"></div>
+                    <span>Visitado (Dijkstra)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f1c40f;"></div>
+                    <span>Visitado (A*)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8e44ad;"></div>
+                    <span>Camino (Dijkstra)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e67e22;"></div>
+                    <span>Camino (A*)</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn">Iniciar Visualización</button>
+                <button id="clearBtn">Limpiar Todo</button>
+                <button id="clearWallsBtn">Limpiar Obstáculos</button>
+                <button id="randomBtn">Obstáculos Aleatorios</button>
+            </div>
+            
+            <div class="speed-control">
+                <span>Velocidad:</span>
+                <input type="range" id="speedSlider" min="1" max="20" value="15">
+                <span id="speedValue">Rápido</span>
+            </div>
+        </div>
+        
+        <div class="grid-container">
+            <div class="grid" id="grid"></div>
+        </div>
+        
+        <div class="comparison" id="comparison"></div>
+        
+        <div class="results">
+            <div class="algo-result" id="dijkstraResult">
+                <div class="algo-title">Dijkstra</div>
+                <div class="stats">Tiempo: <span id="dijkstraTime">0 ms</span></div>
+                <div class="stats">Celdas visitadas: <span id="dijkstraVisited">0</span></div>
+                <div class="stats">Longitud del camino: <span id="dijkstraLength">0</span></div>
+            </div>
+            
+            <div class="algo-result" id="astarResult">
+                <div class="algo-title">A* Search</div>
+                <div class="stats">Tiempo: <span id="astarTime">0 ms</span></div>
+                <div class="stats">Celdas visitadas: <span id="astarVisited">0</span></div>
+                <div class="stats">Longitud del camino: <span id="astarLength">0</span></div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <p><strong>Nota sobre tiempos:</strong> Los tiempos reportados son de ejecución real, no de animación. Dijkstra puede verse más lento en la animación porque explora más nodos, pero es más rápido en tiempo real.</p>
+            <p>A* es más rápido en exploración porque usa heurística para dirigirse al destino, mientras que Dijkstra explora todas las direcciones por igual.</p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Creado para visualizar algoritmos de búsqueda de caminos | Dijkstra vs A*</p>
+    </footer>
+
+    <script>
+        // Configuración
+        const ROWS = 40;
+        const COLS = 40;
+        const START_COLOR = '#2ecc71';
+        const END_COLOR = '#e74c3c';
+        const WALL_COLOR = '#34495e';
+        const VISITED_DIJKSTRA = '#1abc9c';
+        const VISITED_ASTAR = '#f1c40f';
+        const PATH_DIJKSTRA = '#8e44ad';
+        const PATH_ASTAR = '#e67e22';
+        
+        // Variables de estado
+        let grid = [];
+        let startNode = null;
+        let endNode = null;
+        let isDrawing = false;
+        let isErasing = false;
+        let animationSpeed = 15; // Valor inicial más rápido
+        let dijkstraAnimation = [];
+        let astarAnimation = [];
+        let dijkstraPath = [];
+        let astarPath = [];
+        let dijkstraVisitedCount = 0;
+        let astarVisitedCount = 0;
+        let dijkstraTime = 0;
+        let astarTime = 0;
+        let animationRunning = false;
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            createGrid();
+            setupEventListeners();
+            updateSpeed(); // Inicializar etiqueta de velocidad
+        });
+        
+        // Crear la cuadrícula
+        function createGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+            grid = [];
+            
+            for (let row = 0; row < ROWS; row++) {
+                grid[row] = [];
+                for (let col = 0; col < COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    gridElement.appendChild(cell);
+                    grid[row][col] = {
+                        row,
+                        col,
+                        isStart: false,
+                        isEnd: false,
+                        isWall: false,
+                        element: cell
+                    };
+                }
+            }
+            
+            // Establecer nodos iniciales
+            startNode = grid[5][5];
+            endNode = grid[ROWS - 6][COLS - 6];
+            startNode.isStart = true;
+            endNode.isEnd = true;
+            
+            updateCellAppearance(startNode);
+            updateCellAppearance(endNode);
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            const gridElement = document.getElementById('grid');
+            gridElement.addEventListener('mousedown', handleMouseDown);
+            gridElement.addEventListener('mouseover', handleMouseOver);
+            gridElement.addEventListener('mouseup', handleMouseUp);
+            
+            document.getElementById('startBtn').addEventListener('click', startVisualization);
+            document.getElementById('clearBtn').addEventListener('click', clearGrid);
+            document.getElementById('clearWallsBtn').addEventListener('click', clearWalls);
+            document.getElementById('randomBtn').addEventListener('click', generateRandomWalls);
+            
+            document.getElementById('speedSlider').addEventListener('input', updateSpeed);
+        }
+        
+        // Manejar evento mouse down
+        function handleMouseDown(e) {
+            if (animationRunning) return;
+            
+            const cell = getCellFromEvent(e);
+            if (!cell) return;
+            
+            if (e.button === 0) { // Clic izquierdo
+                if (!cell.isStart && !cell.isEnd) {
+                    // Eliminar el inicio anterior
+                    if (startNode) {
+                        startNode.isStart = false;
+                        updateCellAppearance(startNode);
+                    }
+                    
+                    // Establecer nuevo inicio
+                    cell.isStart = true;
+                    cell.isWall = false;
+                    startNode = cell;
+                    updateCellAppearance(cell);
+                }
+            } else if (e.button === 2) { // Clic derecho
+                if (!cell.isStart && !cell.isEnd) {
+                    // Eliminar el destino anterior
+                    if (endNode) {
+                        endNode.isEnd = false;
+                        updateCellAppearance(endNode);
+                    }
+                    
+                    // Establecer nuevo destino
+                    cell.isEnd = true;
+                    cell.isWall = false;
+                    endNode = cell;
+                    updateCellAppearance(cell);
+                }
+            }
+            
+            // Comenzar a dibujar/borrar
+            if (!cell.isStart && !cell.isEnd) {
+                isDrawing = true;
+                cell.isWall = !cell.isWall;
+                updateCellAppearance(cell);
+            }
+        }
+        
+        // Manejar evento mouse over
+        function handleMouseOver(e) {
+            if (!isDrawing || animationRunning) return;
+            
+            const cell = getCellFromEvent(e);
+            if (!cell || cell.isStart || cell.isEnd) return;
+            
+            cell.isWall = true;
+            updateCellAppearance(cell);
+        }
+        
+        // Manejar evento mouse up
+        function handleMouseUp() {
+            isDrawing = false;
+        }
+        
+        // Obtener celda desde evento
+        function getCellFromEvent(e) {
+            const element = e.target;
+            if (!element.classList.contains('cell')) return null;
+            
+            const row = parseInt(element.dataset.row);
+            const col = parseInt(element.dataset.col);
+            return grid[row][col];
+        }
+        
+        // Actualizar apariencia de la celda
+        function updateCellAppearance(cell) {
+            cell.element.className = 'cell';
+            
+            if (cell.isStart) cell.element.classList.add('start');
+            if (cell.isEnd) cell.element.classList.add('end');
+            if (cell.isWall) cell.element.classList.add('wall');
+        }
+        
+        // Actualizar velocidad
+        function updateSpeed() {
+            const slider = document.getElementById('speedSlider');
+            const speedValue = document.getElementById('speedValue');
+            animationSpeed = parseInt(slider.value);
+            
+            const speeds = ['Muy lento', 'Lento', 'Normal', 'Rápido', 'Muy rápido'];
+            const speedIndex = Math.min(Math.floor(animationSpeed / 4), 4);
+            speedValue.textContent = speeds[speedIndex];
+        }
+        
+        // Limpiar toda la cuadrícula
+        function clearGrid() {
+            if (animationRunning) return;
+            
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = grid[row][col];
+                    cell.isStart = false;
+                    cell.isEnd = false;
+                    cell.isWall = false;
+                    updateCellAppearance(cell);
+                }
+            }
+            
+            // Restablecer nodos iniciales
+            startNode = grid[5][5];
+            endNode = grid[ROWS - 6][COLS - 6];
+            startNode.isStart = true;
+            endNode.isEnd = true;
+            
+            updateCellAppearance(startNode);
+            updateCellAppearance(endNode);
+            
+            // Limpiar resultados
+            resetResults();
+        }
+        
+        // Limpiar obstáculos
+        function clearWalls() {
+            if (animationRunning) return;
+            
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = grid[row][col];
+                    if (cell.isWall) {
+                        cell.isWall = false;
+                        updateCellAppearance(cell);
+                    }
+                }
+            }
+        }
+        
+        // Generar obstáculos aleatorios
+        function generateRandomWalls() {
+            if (animationRunning) return;
+            
+            clearWalls();
+            
+            // Generar aproximadamente un 25% de obstáculos
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = grid[row][col];
+                    if (!cell.isStart && !cell.isEnd && Math.random() < 0.25) {
+                        cell.isWall = true;
+                        updateCellAppearance(cell);
+                    }
+                }
+            }
+        }
+        
+        // Reiniciar resultados
+        function resetResults() {
+            document.getElementById('dijkstraTime').textContent = '0 ms';
+            document.getElementById('dijkstraVisited').textContent = '0';
+            document.getElementById('dijkstraLength').textContent = '0';
+            
+            document.getElementById('astarTime').textContent = '0 ms';
+            document.getElementById('astarVisited').textContent = '0';
+            document.getElementById('astarLength').textContent = '0';
+            
+            document.getElementById('comparison').textContent = '';
+            
+            document.getElementById('dijkstraResult').classList.remove('winner');
+            document.getElementById('astarResult').classList.remove('winner');
+        }
+        
+        // Iniciar visualización
+        function startVisualization() {
+            if (animationRunning || !startNode || !endNode) return;
+            
+            // Reiniciar estado
+            resetGrid();
+            resetResults();
+            
+            // Ejecutar algoritmos
+            runDijkstra();
+            runAStar();
+            
+            // Mostrar tiempos inmediatamente
+            document.getElementById('dijkstraTime').textContent = `${dijkstraTime.toFixed(2)} ms`;
+            document.getElementById('astarTime').textContent = `${astarTime.toFixed(2)} ms`;
+            
+            // Iniciar animación
+            animationRunning = true;
+            document.getElementById('startBtn').disabled = true;
+            
+            animateAlgorithms();
+        }
+        
+        // Reiniciar cuadrícula para animación
+        function resetGrid() {
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const cell = grid[row][col];
+                    if (!cell.isStart && !cell.isEnd && !cell.isWall) {
+                        cell.element.className = 'cell';
+                    }
+                }
+            }
+        }
+        
+        // Ejecutar algoritmo Dijkstra
+        function runDijkstra() {
+            const startTime = performance.now();
+            
+            // Inicializar estructuras de datos
+            const distances = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
+            const prevNodes = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+            const visited = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+            const queue = [];
+            
+            // Configurar nodo inicial
+            distances[startNode.row][startNode.col] = 0;
+            queue.push({ node: startNode, distance: 0 });
+            
+            // Ordenar cola por distancia
+            queue.sort((a, b) => a.distance - b.distance);
+            
+            dijkstraAnimation = [];
+            dijkstraVisitedCount = 0;
+            
+            while (queue.length > 0) {
+                // Obtener nodo con menor distancia
+                const current = queue.shift();
+                const currentNode = current.node;
+                
+                // Si ya fue visitado, saltar
+                if (visited[currentNode.row][currentNode.col]) continue;
+                
+                // Marcar como visitado
+                visited[currentNode.row][currentNode.col] = true;
+                dijkstraVisitedCount++;
+                
+                // Agregar a la animación (excluyendo inicio y fin)
+                if (!currentNode.isStart && !currentNode.isEnd) {
+                    dijkstraAnimation.push(currentNode);
+                }
+                
+                // Si llegamos al destino, terminar
+                if (currentNode === endNode) break;
+                
+                // Obtener vecinos
+                const neighbors = getNeighbors(currentNode);
+                
+                for (const neighbor of neighbors) {
+                    if (visited[neighbor.row][neighbor.col] || neighbor.isWall) continue;
+                    
+                    // Calcular nueva distancia
+                    const newDistance = distances[currentNode.row][currentNode.col] + 1;
+                    
+                    // Actualizar si encontramos un camino más corto
+                    if (newDistance < distances[neighbor.row][neighbor.col]) {
+                        distances[neighbor.row][neighbor.col] = newDistance;
+                        prevNodes[neighbor.row][neighbor.col] = currentNode;
+                        queue.push({ node: neighbor, distance: newDistance });
+                    }
+                }
+                
+                // Reordenar colda
+                queue.sort((a, b) => a.distance - b.distance);
+            }
+            
+            // Reconstruir camino
+            dijkstraPath = reconstructPath(prevNodes, startNode, endNode);
+            
+            // Calcular tiempo
+            dijkstraTime = performance.now() - startTime;
+        }
+        
+        // Ejecutar algoritmo A*
+        function runAStar() {
+            const startTime = performance.now();
+            
+            // Inicializar estructuras de datos
+            const gScores = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
+            const fScores = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
+            const prevNodes = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+            const openSet = [];
+            const closedSet = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+            
+            // Configurar nodo inicial
+            gScores[startNode.row][startNode.col] = 0;
+            fScores[startNode.row][startNode.col] = heuristic(startNode, endNode);
+            openSet.push({ node: startNode, fScore: fScores[startNode.row][startNode.col] });
+            
+            astarAnimation = [];
+            astarVisitedCount = 0;
+            
+            while (openSet.length > 0) {
+                // Obtener nodo con menor fScore
+                openSet.sort((a, b) => a.fScore - b.fScore);
+                const current = openSet.shift();
+                const currentNode = current.node;
+                
+                // Si llegamos al destino, terminar
+                if (currentNode === endNode) break;
+                
+                // Marcar como visitado
+                closedSet[currentNode.row][currentNode.col] = true;
+                astarVisitedCount++;
+                
+                // Agregar a la animación (excluyendo inicio y fin)
+                if (!currentNode.isStart && !currentNode.isEnd) {
+                    astarAnimation.push(currentNode);
+                }
+                
+                // Obtener vecinos
+                const neighbors = getNeighbors(currentNode);
+                
+                for (const neighbor of neighbors) {
+                    if (neighbor.isWall || closedSet[neighbor.row][neighbor.col]) continue;
+                    
+                    // Calcular gScore tentativo
+                    const tentativeGScore = gScores[currentNode.row][currentNode.col] + 1;
+                    
+                    // Si encontramos un mejor camino
+                    if (tentativeGScore < gScores[neighbor.row][neighbor.col]) {
+                        prevNodes[neighbor.row][neighbor.col] = currentNode;
+                        gScores[neighbor.row][neighbor.col] = tentativeGScore;
+                        fScores[neighbor.row][neighbor.col] = tentativeGScore + heuristic(neighbor, endNode);
+                        
+                        // Agregar a openSet si no está
+                        if (!openSet.some(item => item.node === neighbor)) {
+                            openSet.push({ 
+                                node: neighbor, 
+                                fScore: fScores[neighbor.row][neighbor.col] 
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Reconstruir camino
+            astarPath = reconstructPath(prevNodes, startNode, endNode);
+            
+            // Calcular tiempo
+            astarTime = performance.now() - startTime;
+        }
+        
+        // Función heurística para A* (distancia Manhattan)
+        function heuristic(nodeA, nodeB) {
+            return Math.abs(nodeA.row - nodeB.row) + Math.abs(nodeA.col - nodeB.col);
+        }
+        
+        // Obtener vecinos de un nodo
+        function getNeighbors(node) {
+            const neighbors = [];
+            const directions = [
+                { row: -1, col: 0 },  // Arriba
+                { row: 1, col: 0 },   // Abajo
+                { row: 0, col: -1 },  // Izquierda
+                { row: 0, col: 1 }    // Derecha
+            ];
+            
+            for (const dir of directions) {
+                const newRow = node.row + dir.row;
+                const newCol = node.col + dir.col;
+                
+                if (newRow >= 0 && newRow < ROWS && newCol >= 0 && newCol < COLS) {
+                    neighbors.push(grid[newRow][newCol]);
+                }
+            }
+            
+            return neighbors;
+        }
+        
+        // Reconstruir camino desde el destino
+        function reconstructPath(prevNodes, startNode, endNode) {
+            const path = [];
+            let currentNode = endNode;
+            
+            while (currentNode !== null && currentNode !== startNode) {
+                path.unshift(currentNode);
+                currentNode = prevNodes[currentNode.row][currentNode.col];
+            }
+            
+            return path;
+        }
+        
+        // Animar algoritmos
+        function animateAlgorithms() {
+            const dijkstraCells = [...dijkstraAnimation];
+            const astarCells = [...astarAnimation];
+            
+            const dijkstraPathCells = [...dijkstraPath];
+            const astarPathCells = [...astarPath];
+            
+            let dijkstraPathStarted = false;
+            let astarPathStarted = false;
+            
+            function animateStep() {
+                // Animar Dijkstra
+                if (dijkstraCells.length > 0) {
+                    const cell = dijkstraCells.shift();
+                    if (!cell.isStart && !cell.isEnd) {
+                        cell.element.classList.add('visited', 'dijkstra');
+                    }
+                } else if (!dijkstraPathStarted) {
+                    dijkstraPathStarted = true;
+                    animatePath(dijkstraPathCells, 'dijkstra');
+                }
+                
+                // Animar A*
+                if (astarCells.length > 0) {
+                    const cell = astarCells.shift();
+                    if (!cell.isStart && !cell.isEnd) {
+                        cell.element.classList.add('visited', 'astar');
+                    }
+                } else if (!astarPathStarted) {
+                    astarPathStarted = true;
+                    animatePath(astarPathCells, 'astar');
+                }
+                
+                // Verificar si ambos algoritmos han terminado
+                if (dijkstraPathStarted && astarPathStarted) {
+                    // Actualizar resultados
+                    document.getElementById('dijkstraVisited').textContent = dijkstraVisitedCount;
+                    document.getElementById('dijkstraLength').textContent = dijkstraPath.length;
+                    
+                    document.getElementById('astarVisited').textContent = astarVisitedCount;
+                    document.getElementById('astarLength').textContent = astarPath.length;
+                    
+                    // Determinar ganador
+                    let winnerText = '';
+                    if (dijkstraPath.length > 0 && astarPath.length > 0) {
+                        if (dijkstraPath.length === astarPath.length) {
+                            winnerText = '¡Ambos algoritmos encontraron caminos de la misma longitud!';
+                        } else if (dijkstraPath.length < astarPath.length) {
+                            winnerText = 'Dijkstra encontró un camino más corto';
+                            document.getElementById('dijkstraResult').classList.add('winner');
+                        } else {
+                            winnerText = 'A* encontró un camino más corto';
+                            document.getElementById('astarResult').classList.add('winner');
+                        }
+                    } else if (dijkstraPath.length > 0) {
+                        winnerText = 'Solo Dijkstra encontró un camino';
+                        document.getElementById('dijkstraResult').classList.add('winner');
+                    } else if (astarPath.length > 0) {
+                        winnerText = 'Solo A* encontró un camino';
+                        document.getElementById('astarResult').classList.add('winner');
+                    } else {
+                        winnerText = 'Ningún algoritmo encontró un camino';
+                    }
+                    
+                    document.getElementById('comparison').textContent = winnerText;
+                    
+                    // Restablecer estado
+                    animationRunning = false;
+                    document.getElementById('startBtn').disabled = false;
+                    return;
+                }
+                
+                // Continuar animación
+                setTimeout(animateStep, 50 - (animationSpeed * 2));
+            }
+            
+            animateStep();
+        }
+        
+        // Animar camino - CORRECCIÓN APLICADA AQUÍ
+        function animatePath(path, algoType) {
+            if (path.length === 0) return;
+            
+            let i = 0;
+            function animateStep() {
+                if (i < path.length) {
+                    const cell = path[i];
+                    if (!cell.isStart && !cell.isEnd) {
+                        // Eliminar clases de visitado y añadir clase de camino específica
+                        cell.element.className = 'cell';
+                        cell.element.classList.add('path', algoType);
+                    }
+                    i++;
+                    setTimeout(animateStep, 20);
+                }
+            }
+            
+            animateStep();
+        }
+        
+        // Prevenir menú contextual en clic derecho
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
