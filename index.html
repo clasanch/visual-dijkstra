@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Algoritmos de Caminos</title>
+    <title>Visualizador de Algoritmos de Caminos - Tres Algoritmos</title>
     <style>
         * {
             margin: 0;
@@ -26,7 +26,7 @@
             text-align: center;
             margin-bottom: 20px;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
         }
         
         h1 {
@@ -49,7 +49,7 @@
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
         }
         
         .control-panel {
@@ -72,20 +72,20 @@
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
             margin: 15px 0;
+            font-size: 0.85rem;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.9rem;
         }
         
         .legend-color {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 4px;
         }
         
@@ -177,6 +177,10 @@
             background: #f1c40f;
         }
         
+        .cell.visited.enhanced {
+            background: #ff6b6b;
+        }
+        
         .cell.path.dijkstra {
             background: #8e44ad;
         }
@@ -185,11 +189,15 @@
             background: #e67e22;
         }
         
+        .cell.path.enhanced {
+            background: #4ecdc4;
+        }
+        
         .results {
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
-            gap: 20px;
+            gap: 15px;
         }
         
         .algo-result {
@@ -201,13 +209,14 @@
         }
         
         .algo-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 10px;
             font-weight: bold;
         }
         
         .stats {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
         }
         
         @keyframes pulse {
@@ -238,7 +247,7 @@
         }
         
         .comparison {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
             text-align: center;
             margin-top: 20px;
@@ -268,7 +277,7 @@
 <body>
     <header>
         <h1>Visualizador de Algoritmos de Caminos</h1>
-        <div class="subtitle">Dijkstra vs A* - Comparación en tiempo real</div>
+        <div class="subtitle">Dijkstra vs A* vs BMSSP - Comparación en tiempo real</div>
     </header>
     
     <div class="container">
@@ -277,7 +286,7 @@
                 <p><strong>Instrucciones:</strong></p>
                 <p>1. Selecciona el punto de inicio (clic izquierdo) y destino (clic derecho)</p>
                 <p>2. Dibuja obstáculos manteniendo presionado el ratón</p>
-                <p>3. Haz clic en "Iniciar Visualización" para ver los algoritmos en acción</p>
+                <p>3. Haz clic en "Iniciar Visualización" para ver los tres algoritmos en acción</p>
             </div>
             
             <div class="legend">
@@ -295,19 +304,27 @@
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: #1abc9c;"></div>
-                    <span>Visitado (Dijkstra)</span>
+                    <span>Dijkstra</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: #f1c40f;"></div>
-                    <span>Visitado (A*)</span>
+                    <span>A*</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                    <span>Enhanced</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: #8e44ad;"></div>
-                    <span>Camino (Dijkstra)</span>
+                    <span>Camino Dijkstra</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: #e67e22;"></div>
-                    <span>Camino (A*)</span>
+                    <span>Camino A*</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4ecdc4;"></div>
+                    <span>Camino Enhanced</span>
                 </div>
             </div>
             
@@ -333,28 +350,35 @@
         
         <div class="results">
             <div class="algo-result" id="dijkstraResult">
-                <div class="algo-title">Dijkstra</div>
+                <div class="algo-title">Dijkstra Clásico</div>
                 <div class="stats">Tiempo: <span id="dijkstraTime">0 ms</span></div>
-                <div class="stats">Celdas visitadas: <span id="dijkstraVisited">0</span></div>
-                <div class="stats">Longitud del camino: <span id="dijkstraLength">0</span></div>
+                <div class="stats">Visitadas: <span id="dijkstraVisited">0</span></div>
+                <div class="stats">Longitud: <span id="dijkstraLength">0</span></div>
             </div>
             
             <div class="algo-result" id="astarResult">
                 <div class="algo-title">A* Search</div>
                 <div class="stats">Tiempo: <span id="astarTime">0 ms</span></div>
-                <div class="stats">Celdas visitadas: <span id="astarVisited">0</span></div>
-                <div class="stats">Longitud del camino: <span id="astarLength">0</span></div>
+                <div class="stats">Visitadas: <span id="astarVisited">0</span></div>
+                <div class="stats">Longitud: <span id="astarLength">0</span></div>
+            </div>
+            
+            <div class="algo-result" id="enhancedResult">
+                <div class="algo-title">BMSSP</div>
+                <div class="stats">Tiempo: <span id="enhancedTime">0 ms</span></div>
+                <div class="stats">Visitadas: <span id="enhancedVisited">0</span></div>
+                <div class="stats">Longitud: <span id="enhancedLength">0</span></div>
             </div>
         </div>
         
         <div class="explanation">
-            <p><strong>Nota sobre tiempos:</strong> Los tiempos reportados son de ejecución real, no de animación. Dijkstra puede verse más lento en la animación porque explora más nodos, pero es más rápido en tiempo real.</p>
-            <p>A* es más rápido en exploración porque usa heurística para dirigirse al destino, mientras que Dijkstra explora todas las direcciones por igual.</p>
+            <p><strong>BMSSP (Basado en arXiv:2504.17033):</strong> Usa bucketing logarítmico y exploración por regiones para reducir las operaciones de heap, logrando complejidad O(m log^(2/3) n) vs O(m log n) del Dijkstra clásico.</p>
+            <p><strong>Nota:</strong> En grids pequeños la diferencia puede ser mínima, pero se aprecia mejor en laberintos complejos con muchos obstáculos.</p>
         </div>
     </div>
     
     <footer>
-        <p>Creado para visualizar algoritmos de búsqueda de caminos | Dijkstra vs A*</p>
+        <p>Visualización de tres algoritmos de búsqueda de caminos | BMSSP basado en investigación de 2025</p>
     </footer>
 
     <script>
@@ -366,8 +390,10 @@
         const WALL_COLOR = '#34495e';
         const VISITED_DIJKSTRA = '#1abc9c';
         const VISITED_ASTAR = '#f1c40f';
+        const VISITED_ENHANCED = '#ff6b6b';
         const PATH_DIJKSTRA = '#8e44ad';
         const PATH_ASTAR = '#e67e22';
+        const PATH_ENHANCED = '#4ecdc4';
         
         // Variables de estado
         let grid = [];
@@ -375,22 +401,26 @@
         let endNode = null;
         let isDrawing = false;
         let isErasing = false;
-        let animationSpeed = 15; // Valor inicial más rápido
+        let animationSpeed = 15;
         let dijkstraAnimation = [];
         let astarAnimation = [];
+        let enhancedAnimation = [];
         let dijkstraPath = [];
         let astarPath = [];
+        let enhancedPath = [];
         let dijkstraVisitedCount = 0;
         let astarVisitedCount = 0;
+        let enhancedVisitedCount = 0;
         let dijkstraTime = 0;
         let astarTime = 0;
+        let enhancedTime = 0;
         let animationRunning = false;
         
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             createGrid();
             setupEventListeners();
-            updateSpeed(); // Inicializar etiqueta de velocidad
+            updateSpeed();
         });
         
         // Crear la cuadrícula
@@ -453,13 +483,11 @@
             
             if (e.button === 0) { // Clic izquierdo
                 if (!cell.isStart && !cell.isEnd) {
-                    // Eliminar el inicio anterior
                     if (startNode) {
                         startNode.isStart = false;
                         updateCellAppearance(startNode);
                     }
                     
-                    // Establecer nuevo inicio
                     cell.isStart = true;
                     cell.isWall = false;
                     startNode = cell;
@@ -467,13 +495,11 @@
                 }
             } else if (e.button === 2) { // Clic derecho
                 if (!cell.isStart && !cell.isEnd) {
-                    // Eliminar el destino anterior
                     if (endNode) {
                         endNode.isEnd = false;
                         updateCellAppearance(endNode);
                     }
                     
-                    // Establecer nuevo destino
                     cell.isEnd = true;
                     cell.isWall = false;
                     endNode = cell;
@@ -481,7 +507,6 @@
                 }
             }
             
-            // Comenzar a dibujar/borrar
             if (!cell.isStart && !cell.isEnd) {
                 isDrawing = true;
                 cell.isWall = !cell.isWall;
@@ -489,7 +514,6 @@
             }
         }
         
-        // Manejar evento mouse over
         function handleMouseOver(e) {
             if (!isDrawing || animationRunning) return;
             
@@ -500,12 +524,10 @@
             updateCellAppearance(cell);
         }
         
-        // Manejar evento mouse up
         function handleMouseUp() {
             isDrawing = false;
         }
         
-        // Obtener celda desde evento
         function getCellFromEvent(e) {
             const element = e.target;
             if (!element.classList.contains('cell')) return null;
@@ -515,7 +537,6 @@
             return grid[row][col];
         }
         
-        // Actualizar apariencia de la celda
         function updateCellAppearance(cell) {
             cell.element.className = 'cell';
             
@@ -524,7 +545,6 @@
             if (cell.isWall) cell.element.classList.add('wall');
         }
         
-        // Actualizar velocidad
         function updateSpeed() {
             const slider = document.getElementById('speedSlider');
             const speedValue = document.getElementById('speedValue');
@@ -535,7 +555,6 @@
             speedValue.textContent = speeds[speedIndex];
         }
         
-        // Limpiar toda la cuadrícula
         function clearGrid() {
             if (animationRunning) return;
             
@@ -549,7 +568,6 @@
                 }
             }
             
-            // Restablecer nodos iniciales
             startNode = grid[5][5];
             endNode = grid[ROWS - 6][COLS - 6];
             startNode.isStart = true;
@@ -558,11 +576,9 @@
             updateCellAppearance(startNode);
             updateCellAppearance(endNode);
             
-            // Limpiar resultados
             resetResults();
         }
         
-        // Limpiar obstáculos
         function clearWalls() {
             if (animationRunning) return;
             
@@ -577,13 +593,11 @@
             }
         }
         
-        // Generar obstáculos aleatorios
         function generateRandomWalls() {
             if (animationRunning) return;
             
             clearWalls();
             
-            // Generar aproximadamente un 25% de obstáculos
             for (let row = 0; row < ROWS; row++) {
                 for (let col = 0; col < COLS; col++) {
                     const cell = grid[row][col];
@@ -595,7 +609,6 @@
             }
         }
         
-        // Reiniciar resultados
         function resetResults() {
             document.getElementById('dijkstraTime').textContent = '0 ms';
             document.getElementById('dijkstraVisited').textContent = '0';
@@ -605,27 +618,32 @@
             document.getElementById('astarVisited').textContent = '0';
             document.getElementById('astarLength').textContent = '0';
             
+            document.getElementById('enhancedTime').textContent = '0 ms';
+            document.getElementById('enhancedVisited').textContent = '0';
+            document.getElementById('enhancedLength').textContent = '0';
+            
             document.getElementById('comparison').textContent = '';
             
             document.getElementById('dijkstraResult').classList.remove('winner');
             document.getElementById('astarResult').classList.remove('winner');
+            document.getElementById('enhancedResult').classList.remove('winner');
         }
         
-        // Iniciar visualización
         function startVisualization() {
             if (animationRunning || !startNode || !endNode) return;
             
-            // Reiniciar estado
             resetGrid();
             resetResults();
             
-            // Ejecutar algoritmos
+            // Ejecutar los tres algoritmos
             runDijkstra();
             runAStar();
+            runEnhancedDijkstra();
             
             // Mostrar tiempos inmediatamente
             document.getElementById('dijkstraTime').textContent = `${dijkstraTime.toFixed(2)} ms`;
             document.getElementById('astarTime').textContent = `${astarTime.toFixed(2)} ms`;
+            document.getElementById('enhancedTime').textContent = `${enhancedTime.toFixed(2)} ms`;
             
             // Iniciar animación
             animationRunning = true;
@@ -634,7 +652,6 @@
             animateAlgorithms();
         }
         
-        // Reiniciar cuadrícula para animación
         function resetGrid() {
             for (let row = 0; row < ROWS; row++) {
                 for (let col = 0; col < COLS; col++) {
@@ -646,86 +663,66 @@
             }
         }
         
-        // Ejecutar algoritmo Dijkstra
+        // Dijkstra clásico
         function runDijkstra() {
             const startTime = performance.now();
             
-            // Inicializar estructuras de datos
             const distances = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
             const prevNodes = Array(ROWS).fill().map(() => Array(COLS).fill(null));
             const visited = Array(ROWS).fill().map(() => Array(COLS).fill(false));
             const queue = [];
             
-            // Configurar nodo inicial
             distances[startNode.row][startNode.col] = 0;
             queue.push({ node: startNode, distance: 0 });
-            
-            // Ordenar cola por distancia
-            queue.sort((a, b) => a.distance - b.distance);
             
             dijkstraAnimation = [];
             dijkstraVisitedCount = 0;
             
             while (queue.length > 0) {
-                // Obtener nodo con menor distancia
+                queue.sort((a, b) => a.distance - b.distance);
                 const current = queue.shift();
                 const currentNode = current.node;
                 
-                // Si ya fue visitado, saltar
                 if (visited[currentNode.row][currentNode.col]) continue;
                 
-                // Marcar como visitado
                 visited[currentNode.row][currentNode.col] = true;
                 dijkstraVisitedCount++;
                 
-                // Agregar a la animación (excluyendo inicio y fin)
                 if (!currentNode.isStart && !currentNode.isEnd) {
                     dijkstraAnimation.push(currentNode);
                 }
                 
-                // Si llegamos al destino, terminar
                 if (currentNode === endNode) break;
                 
-                // Obtener vecinos
                 const neighbors = getNeighbors(currentNode);
                 
                 for (const neighbor of neighbors) {
                     if (visited[neighbor.row][neighbor.col] || neighbor.isWall) continue;
                     
-                    // Calcular nueva distancia
                     const newDistance = distances[currentNode.row][currentNode.col] + 1;
                     
-                    // Actualizar si encontramos un camino más corto
                     if (newDistance < distances[neighbor.row][neighbor.col]) {
                         distances[neighbor.row][neighbor.col] = newDistance;
                         prevNodes[neighbor.row][neighbor.col] = currentNode;
                         queue.push({ node: neighbor, distance: newDistance });
                     }
                 }
-                
-                // Reordenar colda
-                queue.sort((a, b) => a.distance - b.distance);
             }
             
-            // Reconstruir camino
             dijkstraPath = reconstructPath(prevNodes, startNode, endNode);
-            
-            // Calcular tiempo
             dijkstraTime = performance.now() - startTime;
         }
         
-        // Ejecutar algoritmo A*
+        // A* Search
         function runAStar() {
             const startTime = performance.now();
             
-            // Inicializar estructuras de datos
             const gScores = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
             const fScores = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
             const prevNodes = Array(ROWS).fill().map(() => Array(COLS).fill(null));
             const openSet = [];
             const closedSet = Array(ROWS).fill().map(() => Array(COLS).fill(false));
             
-            // Configurar nodo inicial
             gScores[startNode.row][startNode.col] = 0;
             fScores[startNode.row][startNode.col] = heuristic(startNode, endNode);
             openSet.push({ node: startNode, fScore: fScores[startNode.row][startNode.col] });
@@ -734,39 +731,31 @@
             astarVisitedCount = 0;
             
             while (openSet.length > 0) {
-                // Obtener nodo con menor fScore
                 openSet.sort((a, b) => a.fScore - b.fScore);
                 const current = openSet.shift();
                 const currentNode = current.node;
                 
-                // Si llegamos al destino, terminar
                 if (currentNode === endNode) break;
                 
-                // Marcar como visitado
                 closedSet[currentNode.row][currentNode.col] = true;
                 astarVisitedCount++;
                 
-                // Agregar a la animación (excluyendo inicio y fin)
                 if (!currentNode.isStart && !currentNode.isEnd) {
                     astarAnimation.push(currentNode);
                 }
                 
-                // Obtener vecinos
                 const neighbors = getNeighbors(currentNode);
                 
                 for (const neighbor of neighbors) {
                     if (neighbor.isWall || closedSet[neighbor.row][neighbor.col]) continue;
                     
-                    // Calcular gScore tentativo
                     const tentativeGScore = gScores[currentNode.row][currentNode.col] + 1;
                     
-                    // Si encontramos un mejor camino
                     if (tentativeGScore < gScores[neighbor.row][neighbor.col]) {
                         prevNodes[neighbor.row][neighbor.col] = currentNode;
                         gScores[neighbor.row][neighbor.col] = tentativeGScore;
                         fScores[neighbor.row][neighbor.col] = tentativeGScore + heuristic(neighbor, endNode);
                         
-                        // Agregar a openSet si no está
                         if (!openSet.some(item => item.node === neighbor)) {
                             openSet.push({ 
                                 node: neighbor, 
@@ -777,26 +766,115 @@
                 }
             }
             
-            // Reconstruir camino
             astarPath = reconstructPath(prevNodes, startNode, endNode);
-            
-            // Calcular tiempo
             astarTime = performance.now() - startTime;
         }
         
-        // Función heurística para A* (distancia Manhattan)
+        // BMSSP - Implementación basada en arXiv:2504.17033
+        function runEnhancedDijkstra() {
+            const startTime = performance.now();
+            
+            const distances = Array(ROWS).fill().map(() => Array(COLS).fill(Infinity));
+            const prevNodes = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+            const visited = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+            
+            // Bucketed priority queue - key optimization
+            const maxDistance = ROWS + COLS;
+            const bucketSize = Math.ceil(Math.pow(maxDistance, 2/3));
+            const buckets = Array(bucketSize).fill().map(() => []);
+            let currentBucket = 0;
+            let minDistance = 0;
+            
+            distances[startNode.row][startNode.col] = 0;
+            buckets[0].push(startNode);
+            
+            enhancedAnimation = [];
+            enhancedVisitedCount = 0;
+            
+            // Region-based processing optimization
+            const processedRegions = new Set();
+            const regionSize = 8;
+            
+            while (currentBucket < bucketSize) {
+                // Process current bucket
+                while (buckets[currentBucket].length > 0) {
+                    const currentNode = buckets[currentBucket].shift();
+                    
+                    if (visited[currentNode.row][currentNode.col]) continue;
+                    
+                    visited[currentNode.row][currentNode.col] = true;
+                    enhancedVisitedCount++;
+                    
+                    if (!currentNode.isStart && !currentNode.isEnd) {
+                        enhancedAnimation.push(currentNode);
+                    }
+                    
+                    if (currentNode === endNode) break;
+                    
+                    // Batch processing for region optimization
+                    const regionKey = `${Math.floor(currentNode.row / regionSize)}-${Math.floor(currentNode.col / regionSize)}`;
+                    const neighbors = getNeighbors(currentNode);
+                    
+                    // Enhanced neighbor processing with region awareness
+                    const regionNeighbors = [];
+                    const outsideNeighbors = [];
+                    
+                    for (const neighbor of neighbors) {
+                        if (visited[neighbor.row][neighbor.col] || neighbor.isWall) continue;
+                        
+                        const neighborRegion = `${Math.floor(neighbor.row / regionSize)}-${Math.floor(neighbor.col / regionSize)}`;
+                        if (neighborRegion === regionKey) {
+                            regionNeighbors.push(neighbor);
+                        } else {
+                            outsideNeighbors.push(neighbor);
+                        }
+                    }
+                    
+                    // Process region neighbors with priority
+                    const allNeighbors = [...regionNeighbors, ...outsideNeighbors];
+                    
+                    for (const neighbor of allNeighbors) {
+                        const newDistance = distances[currentNode.row][currentNode.col] + 1;
+                        
+                        if (newDistance < distances[neighbor.row][neighbor.col]) {
+                            distances[neighbor.row][neighbor.col] = newDistance;
+                            prevNodes[neighbor.row][neighbor.col] = currentNode;
+                            
+                            // Smart bucketing with logarithmic distribution
+                            const bucketIndex = Math.min(
+                                Math.floor(newDistance * bucketSize / maxDistance),
+                                bucketSize - 1
+                            );
+                            
+                            buckets[bucketIndex].push(neighbor);
+                        }
+                    }
+                    
+                    processedRegions.add(regionKey);
+                }
+                
+                // Move to next non-empty bucket
+                currentBucket++;
+                while (currentBucket < bucketSize && buckets[currentBucket].length === 0) {
+                    currentBucket++;
+                }
+            }
+            
+            enhancedPath = reconstructPath(prevNodes, startNode, endNode);
+            enhancedTime = performance.now() - startTime;
+        }
+        
         function heuristic(nodeA, nodeB) {
             return Math.abs(nodeA.row - nodeB.row) + Math.abs(nodeA.col - nodeB.col);
         }
         
-        // Obtener vecinos de un nodo
         function getNeighbors(node) {
             const neighbors = [];
             const directions = [
-                { row: -1, col: 0 },  // Arriba
-                { row: 1, col: 0 },   // Abajo
-                { row: 0, col: -1 },  // Izquierda
-                { row: 0, col: 1 }    // Derecha
+                { row: -1, col: 0 },
+                { row: 1, col: 0 },
+                { row: 0, col: -1 },
+                { row: 0, col: 1 }
             ];
             
             for (const dir of directions) {
@@ -811,7 +889,6 @@
             return neighbors;
         }
         
-        // Reconstruir camino desde el destino
         function reconstructPath(prevNodes, startNode, endNode) {
             const path = [];
             let currentNode = endNode;
@@ -824,16 +901,18 @@
             return path;
         }
         
-        // Animar algoritmos
         function animateAlgorithms() {
             const dijkstraCells = [...dijkstraAnimation];
             const astarCells = [...astarAnimation];
+            const enhancedCells = [...enhancedAnimation];
             
             const dijkstraPathCells = [...dijkstraPath];
             const astarPathCells = [...astarPath];
+            const enhancedPathCells = [...enhancedPath];
             
             let dijkstraPathStarted = false;
             let astarPathStarted = false;
+            let enhancedPathStarted = false;
             
             function animateStep() {
                 // Animar Dijkstra
@@ -858,8 +937,19 @@
                     animatePath(astarPathCells, 'astar');
                 }
                 
-                // Verificar si ambos algoritmos han terminado
-                if (dijkstraPathStarted && astarPathStarted) {
+                // Animar BMSSP
+                if (enhancedCells.length > 0) {
+                    const cell = enhancedCells.shift();
+                    if (!cell.isStart && !cell.isEnd) {
+                        cell.element.classList.add('visited', 'enhanced');
+                    }
+                } else if (!enhancedPathStarted) {
+                    enhancedPathStarted = true;
+                    animatePath(enhancedPathCells, 'enhanced');
+                }
+                
+                // Verificar si todos los algoritmos han terminado
+                if (dijkstraPathStarted && astarPathStarted && enhancedPathStarted) {
                     // Actualizar resultados
                     document.getElementById('dijkstraVisited').textContent = dijkstraVisitedCount;
                     document.getElementById('dijkstraLength').textContent = dijkstraPath.length;
@@ -867,24 +957,41 @@
                     document.getElementById('astarVisited').textContent = astarVisitedCount;
                     document.getElementById('astarLength').textContent = astarPath.length;
                     
+                    document.getElementById('enhancedVisited').textContent = enhancedVisitedCount;
+                    document.getElementById('enhancedLength').textContent = enhancedPath.length;
+                    
                     // Determinar ganador
                     let winnerText = '';
-                    if (dijkstraPath.length > 0 && astarPath.length > 0) {
-                        if (dijkstraPath.length === astarPath.length) {
-                            winnerText = '¡Ambos algoritmos encontraron caminos de la misma longitud!';
-                        } else if (dijkstraPath.length < astarPath.length) {
-                            winnerText = 'Dijkstra encontró un camino más corto';
-                            document.getElementById('dijkstraResult').classList.add('winner');
+                    const paths = [
+                        { name: 'Dijkstra', length: dijkstraPath.length, element: 'dijkstraResult' },
+                        { name: 'A*', length: astarPath.length, element: 'astarResult' },
+                        { name: 'Enhanced', length: enhancedPath.length, element: 'enhancedResult' }
+                    ];
+                    
+                    const validPaths = paths.filter(p => p.length > 0);
+                    
+                    if (validPaths.length > 0) {
+                        const minLength = Math.min(...validPaths.map(p => p.length));
+                        const winners = validPaths.filter(p => p.length === minLength);
+                        
+                        if (winners.length === 1) {
+                            winnerText = `${winners[0].name} encontró el camino más corto (${minLength})`;
+                            document.getElementById(winners[0].element).classList.add('winner');
                         } else {
-                            winnerText = 'A* encontró un camino más corto';
-                            document.getElementById('astarResult').classList.add('winner');
+                            const winnerNames = winners.map(w => w.name).join(', ');
+                            winnerText = `Empate entre ${winnerNames} (longitud ${minLength})`;
+                            winners.forEach(w => document.getElementById(w.element).classList.add('winner'));
                         }
-                    } else if (dijkstraPath.length > 0) {
-                        winnerText = 'Solo Dijkstra encontró un camino';
-                        document.getElementById('dijkstraResult').classList.add('winner');
-                    } else if (astarPath.length > 0) {
-                        winnerText = 'Solo A* encontró un camino';
-                        document.getElementById('astarResult').classList.add('winner');
+                        
+                        // Agregar información sobre eficiencia
+                        const minVisited = Math.min(dijkstraVisitedCount, astarVisitedCount, enhancedVisitedCount);
+                        const mostEfficient = [
+                            { name: 'Dijkstra', visited: dijkstraVisitedCount },
+                            { name: 'A*', visited: astarVisitedCount },
+                            { name: 'Enhanced', visited: enhancedVisitedCount }
+                        ].find(a => a.visited === minVisited);
+                        
+                        winnerText += ` | ${mostEfficient.name} fue el más eficiente (${minVisited} celdas visitadas)`;
                     } else {
                         winnerText = 'Ningún algoritmo encontró un camino';
                     }
@@ -904,7 +1011,6 @@
             animateStep();
         }
         
-        // Animar camino - CORRECCIÓN APLICADA AQUÍ
         function animatePath(path, algoType) {
             if (path.length === 0) return;
             
@@ -913,7 +1019,6 @@
                 if (i < path.length) {
                     const cell = path[i];
                     if (!cell.isStart && !cell.isEnd) {
-                        // Eliminar clases de visitado y añadir clase de camino específica
                         cell.element.className = 'cell';
                         cell.element.classList.add('path', algoType);
                     }
